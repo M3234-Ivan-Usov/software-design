@@ -8,17 +8,16 @@ import ru.akirakozov.sd.refactoring.servlet.GetProductsServlet;
 import ru.akirakozov.sd.refactoring.servlet.QueryServlet;
 
 import javax.servlet.http.HttpServlet;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @author akirakozov, iusov
  */
 public class Main {
     public static final int PORT = 8081;
+    public static String DB_NAME;
 
     private static Server configureServer() {
         Server server = new Server(PORT);
@@ -45,23 +44,37 @@ public class Main {
             Statement stmt = c.createStatement();
             stmt.executeUpdate(operator);
             stmt.close();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Failed to execute SQL operator inside " + dbName);
             e.printStackTrace();
         }
     }
 
+    public static void execQuery(String dbName, String operator, SqlWrapper<ResultSet, SQLException> resultHandler) {
+        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + dbName)) {
+            Statement stmt = c.createStatement();
+            ResultSet queryResult = stmt.executeQuery(operator);
+            resultHandler.call(queryResult);
+            queryResult.close();
+            stmt.close();
+        } catch (SQLException e) {
+            System.err.println("Failed to execute SQL query inside " + dbName);
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) throws Exception {
-        execSql("test.db",
+        DB_NAME = (args != null && args.length > 0)? args[0]: "test.db";
+        execSql(DB_NAME,
                 "CREATE TABLE IF NOT EXISTS PRODUCT" +
-                "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                " NAME           TEXT    NOT NULL, " +
-                " PRICE          INT     NOT NULL)"
+                        "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                        " NAME           TEXT    NOT NULL, " +
+                        " PRICE          INT     NOT NULL)"
         );
 
         Server server = configureServer();
         server.start();
         server.join();
+        DB_NAME = null;
     }
 }
