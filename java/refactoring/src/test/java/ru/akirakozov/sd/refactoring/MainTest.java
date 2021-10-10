@@ -75,15 +75,7 @@ public class MainTest {
 
     @AfterClass
     public static void shutdownServer() {
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
-            String sql = "DELETE FROM PRODUCT";
-            Statement stmt = c.createStatement();
-            stmt.executeUpdate(sql);
-            stmt.close();
-        } catch (SQLException e) {
-            System.err.println("Failed to clear test database");
-            e.printStackTrace();
-        }
+        Main.execSql("test.db", "DELETE FROM PRODUCT");
         testServer.interrupt();
     }
 }
