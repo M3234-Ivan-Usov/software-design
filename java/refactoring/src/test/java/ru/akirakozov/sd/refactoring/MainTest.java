@@ -13,8 +13,10 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.*;
 import java.net.http.*;
-import java.sql.*;
 
+/**
+ * @author iusov
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MainTest {
     private static final Thread testServer = new Thread(() -> {
@@ -36,7 +38,7 @@ public class MainTest {
     private HttpResponse<String> connectTo(String postfix)
             throws IOException, InterruptedException, URISyntaxException {
         HttpRequest request = HttpRequest.newBuilder(
-                new URL("http://localhost:8081/" + postfix).toURI()
+                new URL("http://localhost:" + Main.PORT + postfix).toURI()
         ).build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
@@ -46,21 +48,21 @@ public class MainTest {
     @Test
     public void test01AddProductConnection()
             throws IOException, URISyntaxException, InterruptedException {
-        connectTo("add-product?name=iphone6&price=300");
-        connectTo("add-product?name=iphone7&price=500");
+        connectTo("/add-product?name=iphone6&price=300");
+        connectTo("/add-product?name=iphone7&price=500");
     }
 
     @Test
     public void test02GetProductsConnection()
             throws IOException, URISyntaxException, InterruptedException {
-        HttpResponse<String> response = connectTo("get-products");
+        HttpResponse<String> response = connectTo("/get-products");
         Document doc = Jsoup.parse(response.body());
         assertEquals("iphone6 300 iphone7 500", doc.body().text());
     }
 
     private void makeQuery(String command, String expectedResult)
             throws IOException, URISyntaxException, InterruptedException {
-        HttpResponse<String> response = connectTo("query?command=" + command);
+        HttpResponse<String> response = connectTo("/query?command=" + command);
         Document doc = Jsoup.parse(response.body());
         assertEquals(expectedResult, doc.body().text());
     }
@@ -75,7 +77,7 @@ public class MainTest {
 
     @AfterClass
     public static void shutdownServer() {
-        Main.execSql("test.db", "DELETE FROM PRODUCT");
+        Main.execSql(Main.DB_NAME, "DELETE FROM PRODUCT");
         testServer.interrupt();
     }
 }
