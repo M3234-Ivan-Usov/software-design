@@ -21,7 +21,7 @@ import java.net.http.*;
 public class MainTest {
     private static final Thread testServer = new Thread(() -> {
         try {
-            Main.main(null);
+            Main.main(new String[]{ "test" });
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -87,9 +87,13 @@ public class QueryServlet extends HttpServlet {
             response.getWriter().println("Unknown command: " + command);
         }
         else {
-            commands.get(command).call(response);
-            response.setContentType("text/html");
-            response.setStatus(HttpServletResponse.SC_OK);
+            try {
+                commands.get(command).call(response);
+                response.setContentType("text/html");
+                response.setStatus(HttpServletResponse.SC_OK);
+            } catch (RuntimeException e) {
+                response.getWriter().println("Exception while executing query: " + e.getMessage());
+            }
         }
     }
 }

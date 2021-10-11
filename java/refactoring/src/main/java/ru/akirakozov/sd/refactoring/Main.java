@@ -3,20 +3,19 @@ package ru.akirakozov.sd.refactoring;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import ru.akirakozov.sd.refactoring.servlet.AddProductServlet;
-import ru.akirakozov.sd.refactoring.servlet.GetProductsServlet;
-import ru.akirakozov.sd.refactoring.servlet.QueryServlet;
+import ru.akirakozov.sd.refactoring.servlet.*;
 
 import javax.servlet.http.HttpServlet;
 import java.sql.*;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * @author akirakozov, iusov
  */
 public class Main {
     public static final int PORT = 8081;
+    private static final String TEST_DB = "test.db";
+    private static final String PROD_DB = "prod.db";
     public static String DB_NAME;
 
     private static Server configureServer() {
@@ -64,7 +63,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-        DB_NAME = (args != null && args.length > 0)? args[0]: "test.db";
+        DB_NAME = (args != null && args.length > 0 && args[0].equals("test"))? TEST_DB: PROD_DB;
         execSql(DB_NAME,
                 "CREATE TABLE IF NOT EXISTS PRODUCT" +
                         "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
